@@ -2,26 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Sabse Zaroori Line Mobile Ke Liye -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RaVa AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif; background-color: #000; color: #E5E7EB; overflow: hidden;
-        }
-        #space-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; overflow: hidden;
-        }
-        .star {
-            position: absolute; background-color: white; border-radius: 50%; animation: twinkle linear infinite;
-        }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #E5E7EB; }
+        #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; overflow: hidden; }
+        .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle linear infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-        .bg-blurry {
-            background-color: rgba(23, 23, 23, 0.8); backdrop-filter: blur(10px);
-        }
+        .bg-blurry { background-color: rgba(10, 10, 10, 0.8); backdrop-filter: blur(12px); }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 20px; }
         .ai-message-content p { margin-bottom: 0.5rem; }
@@ -31,27 +23,23 @@
         .ai-message-content code { background-color: #111827; border: 1px solid #374151; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; word-break: break-all; }
         .ai-message-content pre { background-color: #0d1117; border: 1px solid #374151; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; overflow-x: auto; }
         .ai-message-content pre code { padding: 0; background-color: transparent; border: none; }
-        .glowing-border {
-            position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden;
-        }
+        .glowing-border { position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden; }
         .glowing-border:focus-within { border-color: #6366f1; }
-        .glowing-border::after {
-            content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px;
-            background: linear-gradient(90deg, transparent, #4f46e5, #ec4899, #22d3ee, transparent);
-            animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out;
-        }
+        .glowing-border::after { content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px; background: linear-gradient(90deg, transparent, #4f46e5, #ec4899, #22d3ee, transparent); animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out; }
         .glowing-border:focus-within::after { opacity: 1; }
         @keyframes move-light { 0% { transform: translateX(0); } 100% { transform: translateX(25%); } }
+        /* Fix for mobile keyboard pushing up the layout */
+        #app-view { height: 100vh; height: -webkit-fill-available; }
     </style>
 </head>
 <body class="antialiased">
     
     <div id="space-bg"></div>
 
-    <div id="app-root" class="w-full min-h-screen flex flex-col items-center justify-center p-0 sm:p-4">
+    <div id="app-root" class="w-full min-h-screen flex flex-col items-center justify-center p-0">
 
-        <div id="login-view" class="w-full max-w-md hidden p-4">
-            <div class="bg-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/10">
+        <div id="login-view" class="w-full h-full flex items-center justify-center hidden p-4">
+            <div class="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/10">
                 <h1 class="text-3xl font-bold text-center mb-2 text-white">Welcome to <span class="text-indigo-400">RaVa</span> AI</h1>
                 <p class="text-center text-slate-400 mb-8">Sign in to continue</p>
                 <div id="email-password-form">
@@ -71,49 +59,41 @@
             </div>
         </div>
 
-        <div id="pricing-view" class="w-full max-w-4xl hidden p-4">
-            <div class="bg-slate-900/50 backdrop-blur-xl border border-indigo-500/50 rounded-2xl p-6 sm:p-8 text-center shadow-2xl shadow-indigo-500/20">
+        <div id="pricing-view" class="w-full h-full flex items-center justify-center hidden p-4">
+            <div class="w-full max-w-4xl bg-slate-900/50 backdrop-blur-xl border border-indigo-500/50 rounded-2xl p-6 sm:p-8 text-center shadow-2xl shadow-indigo-500/20">
                 <h2 class="text-3xl font-bold text-white mb-4">Unlock Full Potential</h2>
-                <p class="text-slate-300 mb-8">Choose a plan to get unlimited access to RaVa AI.</p>
+                <p class="text-slate-300 mb-8">Choose a plan to get unlimited access.</p>
                 <div class="flex flex-col sm:flex-row gap-8">
                     <div class="bg-slate-800/60 p-8 rounded-xl border border-slate-700 flex-1">
                         <h3 class="text-2xl font-semibold text-white mb-2">Monthly</h3>
                         <p class="text-4xl font-bold text-indigo-400 mb-4">₹250</p>
-                        <button onclick="handlePurchaseClick()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin to Buy</button>
+                        <button onclick="handlePurchaseClick()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
                     </div>
                     <div class="relative bg-slate-800/60 p-8 rounded-xl border border-sky-500 flex-1">
                          <span class="absolute top-0 right-0 -mt-3 mr-3 px-3 py-1 text-sm font-bold text-white bg-sky-500 rounded-full">BEST VALUE</span>
                         <h3 class="text-2xl font-semibold text-white mb-2">Yearly</h3>
                         <p class="text-4xl font-bold text-sky-400 mb-4">₹350</p>
-                        <button onclick="handlePurchaseClick()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin to Buy</button>
+                        <button onclick="handlePurchaseClick()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
                     </div>
                 </div>
                  <button id="back-to-chat-btn" class="mt-8 text-slate-400 hover:text-white">Back to Chat</button>
             </div>
         </div>
 
-        <div id="app-view" class="w-full h-screen max-w-5xl flex-col flex bg-blurry sm:rounded-2xl border-slate-700/50 shadow-2xl shadow-black/50 overflow-hidden">
-            <header class="flex flex-wrap sm:flex-nowrap justify-between items-center gap-y-2 p-3 sm:p-4 border-b border-slate-700 flex-shrink-0">
-                <div class="text-left sm:text-center order-1">
-                    <h1 class="text-lg sm:text-xl font-bold text-white">RaVa <span class="text-indigo-400">AI</span></h1>
+        <div id="app-view" class="w-full flex-col flex bg-blurry sm:rounded-2xl border-slate-700/50 shadow-2xl shadow-black/50 overflow-hidden">
+            <header class="flex justify-between items-center gap-y-2 p-3 border-b border-slate-700 flex-shrink-0">
+                <div class="text-left">
+                    <h1 class="text-lg font-bold text-white">RaVa <span class="text-indigo-400">AI</span></h1>
                     <p class="text-xs text-slate-500 -mt-1 hidden sm:block">Created by Vishal Goswami</p>
                 </div>
-                <div class="flex items-center bg-slate-800 p-1 rounded-lg order-3 sm:order-2 w-full sm:w-auto justify-center">
-                    <button id="chat-mode-btn" class="px-3 py-1 text-sm font-semibold rounded-md bg-indigo-600 text-white flex-1">Chat</button>
-                    <button id="image-mode-btn" class="px-3 py-1 text-sm font-semibold rounded-md text-slate-300 flex-1">Image Gen</button>
+                <div class="flex items-center bg-slate-800 p-1 rounded-lg">
+                    <button id="chat-mode-btn" class="px-3 py-1 text-sm font-semibold rounded-md bg-indigo-600 text-white flex-1 whitespace-nowrap">Chat</button>
+                    <button id="image-mode-btn" class="px-3 py-1 text-sm font-semibold rounded-md text-slate-300 flex-1 whitespace-nowrap">Image Gen</button>
                 </div>
-                <div class="flex items-center space-x-2 sm:space-x-4 order-2 sm:order-3">
-                    <button id="pricing-btn" class="bg-slate-700 hover:bg-indigo-600 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition">Pricing</button>
-                    <div id="user-info" class="hidden items-center space-x-4">
-                        <div class="text-right hidden sm:block">
-                            <p id="user-email" class="text-sm text-white"></p>
-                            <p id="user-id-display" class="text-xs text-slate-400 font-mono"></p>
-                        </div>
-                        <button id="logout-btn" class="bg-slate-700 hover:bg-red-600 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition">Logout</button>
-                    </div>
-                    <div id="guest-info">
-                        <button id="login-prompt-btn" class="bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition whitespace-nowrap">Login</button>
-                    </div>
+                 <div id="user-info" class="hidden items-center space-x-4">
+                    <button id="logout-btn" class="bg-slate-700 hover:bg-red-600 p-2 rounded-full text-white font-semibold transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    </button>
                 </div>
             </header>
             <main class="flex-1 flex flex-col p-2 sm:p-4 overflow-hidden">
@@ -127,6 +107,10 @@
                     </div>
                 </div>
                 <div class="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-slate-700 flex-shrink-0">
+                    <div id="guest-info" class="flex items-center justify-center gap-x-4 mb-3">
+                        <button id="login-prompt-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition whitespace-nowrap">Login / Sign Up</button>
+                        <button id="pricing-btn" class="flex-1 bg-slate-700 hover:bg-indigo-600 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition">Pricing</button>
+                    </div>
                     <div class="bg-slate-800 rounded-xl flex items-center glowing-border">
                         <textarea id="prompt-input" rows="1" placeholder="Ask RaVa AI anything..." class="w-full bg-transparent p-4 pr-24 sm:pr-28 text-white focus:outline-none resize-none"></textarea>
                         <div class="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 flex items-center">
@@ -147,54 +131,6 @@
             </main>
         </div>
         
-        <div id="admin-view" class="w-full min-h-screen p-4 sm:p-8 hidden bg-black">
-            <div id="admin-login-form" class="max-w-md mx-auto mt-20">
-                <div class="bg-gray-900/50 backdrop-blur-xl border border-blue-500/50 rounded-2xl p-8 shadow-2xl shadow-blue-500/20">
-                     <h2 class="text-2xl font-bold text-center text-white mb-6">Admin Panel Login</h2>
-                     <input id="admin-user" type="text" placeholder="Admin Username" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                     <input id="admin-pass" type="password" placeholder="Admin Password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                     <div id="admin-auth-error" class="text-red-400 text-sm mb-4 hidden"></div>
-                     <button id="admin-login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Login</button>
-                </div>
-            </div>
-            <div id="admin-dashboard" class="hidden">
-                 <h2 class="text-3xl font-bold text-white mb-6">Admin Dashboard</h2>
-                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
-                        <h3 class="text-xl font-semibold mb-4 text-white">User Management</h3>
-                        <div id="user-list" class="max-h-96 overflow-y-auto"></div>
-                    </div>
-                    <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700 space-y-6">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-4 text-white">Broadcast Message</h3>
-                            <textarea id="broadcast-input" rows="3" placeholder="Send a message to all users..." class="w-full bg-gray-800 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                            <button id="send-broadcast-btn" class="mt-2 bg-blue-600 hover:bg-blue-700 px-5 py-2 rounded-lg text-white font-semibold transition">Send</button>
-                        </div>
-                        <div>
-                             <h3 class="text-xl font-semibold mb-4 text-white">Admin AI Access</h3>
-                             <div class="relative bg-gray-800 border border-gray-600 rounded-xl flex items-center">
-                                <textarea id="admin-prompt-input" rows="2" placeholder="Admin prompt..." class="w-full bg-transparent p-4 pr-16 text-white focus:outline-none resize-none"></textarea>
-                                <button id="admin-send-btn" class="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg></button>
-                             </div>
-                             <div id="admin-ai-output" class="mt-4 p-4 bg-gray-800 rounded-lg text-sm text-gray-300 max-h-60 overflow-y-auto"></div>
-                        </div>
-                    </div>
-                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <div id="contact-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden z-50 p-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-2xl p-8 max-w-sm w-full text-center relative">
-            <button onclick="hideContactModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white">&times;</button>
-            <h3 class="text-2xl font-bold text-white mb-4">Contact Admin</h3>
-            <p class="text-gray-400 mb-6">Reach out to complete your purchase.</p>
-            <div class="space-y-4">
-                <a href="#" class="block w-full text-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition">WhatsApp</a>
-                <a href="#" class="block w-full text-center bg-pink-500 hover:bg-pink-600 text-white font-bold py-3 px-4 rounded-lg transition">Instagram</a>
-                <a href="#" class="block w-full text-center bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 px-4 rounded-lg transition">Telegram</a>
-            </div>
-        </div>
     </div>
 
     <script type="module">
@@ -216,25 +152,25 @@
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         const appId = 'rava-ai-app';
-        const [loginView, pricingView, appView, adminView, adminLoginForm, adminDashboard, userInfo, guestInfo, promptInput, chatModeBtn, imageModeBtn, imageUploadBtn] = 
-            ['login-view', 'pricing-view', 'app-view', 'admin-view', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn'].map(id => document.getElementById(id));
+        const [loginView, pricingView, appView, adminView, adminLoginForm, adminDashboard, userInfo, guestInfo, promptInput, chatModeBtn, imageModeBtn, imageUploadBtn, pricingBtn, loginPromptBtn] = 
+            ['login-view', 'pricing-view', 'app-view', 'admin-view', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn', 'pricing-btn', 'login-prompt-btn'].map(id => document.getElementById(id));
         let currentUser = null, imageBase64 = null, currentMode = 'chat';
         function createStars() {
             const space = document.getElementById('space-bg');
             if(space.children.length > 0) return;
-            for (let i = 0; i < 200; i++) {
+            for (let i = 0; i < 150; i++) {
                 const star = Object.assign(document.createElement('div'), { className: 'star' });
-                const size = Math.random() * 3 + 1;
+                const size = Math.random() * 2.5 + 1;
                 Object.assign(star.style, {
                     width: `${size}px`, height: `${size}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
-                    animationDuration: `${Math.random() * 5 + 2}s`, animationDelay: `${Math.random() * 3}s`
+                    animationDuration: `${Math.random() * 5 + 3}s`, animationDelay: `${Math.random() * 4}s`
                 });
                 space.appendChild(star);
             }
         }
         function showView(viewName) {
-            [loginView, pricingView, appView, adminView].forEach(v => v.classList.add('hidden'));
-            document.getElementById('app-root').classList.toggle('justify-center', !['app', 'admin'].includes(viewName));
+            [loginView, pricingView, appView].forEach(v => v.classList.add('hidden'));
+            document.getElementById('app-root').classList.toggle('sm:p-4', ['login', 'pricing'].includes(viewName));
             document.getElementById(`${viewName}-view`).classList.remove('hidden');
         }
         onAuthStateChanged(auth, async (user) => {
@@ -250,8 +186,6 @@
                 if (userData.banned) { alert("Your account has been banned."); return signOut(auth); }
                 const isTrialExpired = userData.createdAt ? (Date.now() - userData.createdAt.toDate().getTime()) > (7 * 24 * 60 * 60 * 1000) : true;
                 if (!userData.accessGranted && isTrialExpired) return showView('pricing');
-                document.getElementById('user-email').textContent = userData.email;
-                document.getElementById('user-id-display').textContent = `ID: ${userData.userId}`;
                 if (location.hash !== '#pricing') showView('app');
             } else {
                 currentUser = auth.currentUser; userInfo.classList.add('hidden'); guestInfo.classList.remove('hidden');
@@ -263,8 +197,8 @@
             document.getElementById('google-signin-btn').addEventListener('click', () => signInWithPopup(auth, provider).catch(handleAuthError));
             document.getElementById('login-btn').addEventListener('click', () => signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).catch(handleAuthError));
             document.getElementById('signup-btn').addEventListener('click', () => createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).catch(handleAuthError));
-            document.getElementById('login-prompt-btn').addEventListener('click', () => showView('login'));
-            document.getElementById('pricing-btn').addEventListener('click', () => { location.hash = '#pricing'; showView('pricing'); });
+            loginPromptBtn.addEventListener('click', () => showView('login'));
+            pricingBtn.addEventListener('click', () => { location.hash = '#pricing'; showView('pricing'); });
             document.getElementById('back-to-chat-btn').addEventListener('click', () => { location.hash = ''; showView('app'); });
             document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
         }
@@ -284,7 +218,7 @@
         const sendBtn = document.getElementById('send-btn'); const chatContainer = document.getElementById('chat-container');
         sendBtn.addEventListener('click', handleSendMessage); promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
         async function handleSendMessage() {
-            const prompt = promptInput.value.trim(); if (!prompt) return;
+            const prompt = promptInput.value.trim(); if (!prompt && !imageBase64) return;
             sendBtn.disabled = true; addUserMessage(prompt, currentMode === 'chat' ? imageBase64 : null); promptInput.value = '';
             addBotMessage("...", true);
             try {
@@ -295,12 +229,9 @@
             finally { sendBtn.disabled = false; removeImage(); }
         }
         async function callProxyAPI(prompt, base64Data, mode) {
-            const response = await fetch('/.netlify/functions/gemini', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt, base64Data, mode })
-            });
+            const response = await fetch('/.netlify/functions/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, base64Data, mode }) });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Unknown error from server');
+            if (!response.ok) throw new Error(result.error || 'Unknown error');
             return result;
         }
         function addUserMessage(text, b64) {
@@ -336,19 +267,6 @@
             }
         });
         function removeImage() { imageBase64 = null; imageUpload.value = ''; document.getElementById('image-preview-container').classList.add('hidden'); }
-        document.getElementById('admin-login-btn').addEventListener('click', () => {
-            if (document.getElementById('admin-user').value === 'admin' && document.getElementById('admin-pass').value === 'rava-ai-secret-password') {
-                adminLoginForm.classList.add('hidden'); adminDashboard.classList.remove('hidden'); loadUsers();
-            } else { document.getElementById('admin-auth-error').textContent = 'Invalid credentials.'; document.getElementById('admin-auth-error').classList.remove('hidden'); }
-        });
-        async function loadUsers() {
-            const userListDiv = document.getElementById('user-list');
-            userListDiv.innerHTML = '<p class="text-gray-400">Loading users...</p>';
-            const querySnapshot = await getDocs(collection(db, `artifacts/${appId}/users`));
-            userListDiv.innerHTML = querySnapshot.docs.map(doc => { const user = doc.data(); return `<div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg mb-2"><div><p class="text-white font-semibold">${user.email}</p><p class="text-xs text-gray-400 font-mono">${user.userId}</p><p class="text-xs ${user.accessGranted ? 'text-green-400' : 'text-yellow-400'}">${user.accessGranted ? 'Access Granted' : 'Trial/Expired'}</p></div><div class="flex gap-2"><button onclick="window.grantUserAccess('${doc.id}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Grant</button><button onclick="window.banUser('${doc.id}', ${!user.banned})" class="text-xs ${user.banned ? 'bg-yellow-500' : 'bg-red-600'} hover:bg-red-700 text-white px-3 py-1 rounded-md">${user.banned ? 'Unban' : 'Ban'}</button></div></div>`; }).join('');
-        }
-        window.grantUserAccess = async (uid) => { if (confirm('Are you sure?')) { await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { accessGranted: true }); loadUsers(); } };
-        window.banUser = async (uid, shouldBan) => { if (confirm(`Are you sure?`)) { await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { banned: shouldBan }); loadUsers(); } };
         window.handlePurchaseClick = () => { if (currentUser && !currentUser.isAnonymous) showContactModal(); else { alert('Please log in first.'); showView('login'); } }
         const createRandomId = () => Math.random().toString(36).substring(2, 15);
         window.showContactModal = () => document.getElementById('contact-modal').classList.remove('hidden');
@@ -367,21 +285,3 @@
 </body>
 </html>
 ```
-
-### Ab Aakhri Baar Ise Live Karte Hain
-
-1.  **Step 1: Code Ko Replace Karo:** Upar diye gaye poore code ko copy karke apni `index.html` file mein paste kar do. Purana saara code hata dena.
-
-2.  **Step 2: GitHub Par Bhejo:** Apne Kali terminal mein `RaVa-AI-Project` folder ke andar jao aur yeh aakhri 3 commands chalao:
-
-    ```bash
-    # Changes ko add karo
-    git add index.html
-
-    # Naya commit banao
-    git commit -m "Feat: Make website mobile responsive"
-
-    # GitHub par push kardo
-    git push origin main
-    
-
