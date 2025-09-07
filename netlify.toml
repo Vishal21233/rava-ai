@@ -1,2 +1,5 @@
-[functions]
-  directory = "netlify/functions/"
+# Yeh rule Netlify ko batata hai ki har request ko index.html par bhejo
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

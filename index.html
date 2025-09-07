@@ -138,11 +138,11 @@
                 </div>
             </div>
             <div id="admin-dashboard" class="hidden w-full h-full flex flex-col">
-                 <h2 class="text-3xl font-bold text-white p-6 flex-shrink-0">Admin Dashboard</h2>
-                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 overflow-y-auto">
+                 <header class="p-4 border-b border-slate-700 flex-shrink-0"><h2 class="text-2xl font-bold text-white">Admin Dashboard</h2></header>
+                 <div class="flex-1 grid grid-cols-1 lg:grid-cols-1 gap-8 p-6 overflow-y-auto">
                     <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
                         <h3 class="text-xl font-semibold mb-4 text-white">User Management</h3>
-                        <div id="user-list" class="max-h-96 overflow-y-auto"></div>
+                        <div id="user-list" class="space-y-2"></div>
                     </div>
                  </div>
             </div>
@@ -175,6 +175,8 @@
             ['login-view', 'pricing-view', 'app-view', 'admin-view-container', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn', 'pricing-btn', 'login-prompt-btn', 'send-btn', 'chat-container'].map(id => document.getElementById(id));
         
         let currentUser = null, imageBase64 = null, currentMode = 'chat';
+        // <<<< NAYI CHEEZ: User ka status yaad rakhne ke liye >>>>
+        let userStatus = 'guest';
 
         function createStars() {
             const space = document.getElementById('space-bg');
@@ -190,7 +192,8 @@
         function showView(viewName) {
             [loginView, pricingView, appView, adminViewContainer].forEach(v => v.classList.add('hidden'));
             document.getElementById('app-root').classList.toggle('sm:p-4', ['login', 'pricing'].includes(viewName));
-            document.getElementById(`${viewName === 'admin' ? 'admin-view-container' : viewName + '-view'}`).classList.remove('hidden');
+            const viewId = viewName === 'admin' ? 'admin-view-container' : `${viewName}-view`;
+            document.getElementById(viewId).classList.remove('hidden');
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -206,11 +209,12 @@
                 if (userData.banned) { alert("Your account has been banned."); return signOut(auth); }
                 const isTrialExpired = userData.createdAt ? (Date.now() - userData.createdAt.toDate().getTime()) > (7 * 24 * 60 * 60 * 1000) : true;
                 if (!userData.accessGranted && isTrialExpired) return showView('pricing');
-                if (location.hash !== '#pricing') showView('app');
+                if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } else if (location.hash !== '#pricing') { showView('app'); }
             } else {
                 currentUser = auth.currentUser; userInfo.classList.add('hidden'); guestInfo.classList.remove('hidden');
+                userStatus = 'guest'; // Reset status on logout
                 if (!currentUser) signInAnonymously(auth).catch(e => console.error("Anonymous sign-in failed:", e));
-                if (location.hash !== '#pricing') showView('app');
+                if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } else if (location.hash !== '#pricing') { showView('app'); }
             }
         });
 
@@ -234,7 +238,7 @@
             currentMode = mode;
             chatModeBtn.classList.toggle('bg-indigo-600', mode === 'chat'); chatModeBtn.classList.toggle('text-white', mode === 'chat');
             imageModeBtn.classList.toggle('bg-indigo-600', mode === 'image'); imageModeBtn.classList.toggle('text-white', mode === 'image');
-            promptInput.placeholder = mode === 'chat' ? "Ask RaVa AI anything..." : "Describe an image to create...";
+            promptInput.placeholder = mode === 'chat' ? "Ask RaVa AI anything..." : "Describe an image to create or style...";
             imageUploadBtn.classList.toggle('hidden', mode === 'image');
             if (mode === 'image') removeImage();
         }
@@ -247,15 +251,25 @@
             sendBtn.disabled = true; addUserMessage(prompt, currentMode === 'chat' ? imageBase64 : null); promptInput.value = '';
             addBotMessage("...", true);
             try {
-                const response = await callProxyAPI(prompt, imageBase64, currentMode);
-                if (currentMode === 'chat') { updateBotMessage(response.candidates[0].content.parts[0].text); } 
+                // <<<< NAYI CHEEZ: User ka status API call ke saath bhejo >>>>
+                const response = await callProxyAPI(prompt, imageBase64, currentMode, userStatus);
+                
+                // <<<< NAYI CHEEZ: Agar secret word sahi ho to status update karo >>>>
+                const responseText = response.candidates[0].content.parts[0].text;
+                if (responseText.includes('Welcome back, sir.')) {
+                    userStatus = 'master';
+                } else if (responseText.includes("It's so good to hear from you.")) {
+                    userStatus = 'family';
+                }
+
+                if (currentMode === 'chat') { updateBotMessage(responseText); } 
                 else { const b64 = response.candidates[0].content.parts.find(p => p.inlineData).inlineData.data; updateBotMessageWithImage(b64); }
             } catch (error) { console.error("Full API Error:", error); updateBotMessage(`Sorry, an error occurred: **Details:** ${error.message}`); } 
             finally { sendBtn.disabled = false; removeImage(); }
         }
 
-        async function callProxyAPI(prompt, base64Data, mode) {
-            const response = await fetch('/.netlify/functions/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, base64Data, mode }) });
+        async function callProxyAPI(prompt, base64Data, mode, status) {
+            const response = await fetch('/.netlify/functions/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, base64Data, mode, userStatus: status }) });
             const result = await response.json();
             if (!response.ok) throw new Error(JSON.stringify(result.error) || 'Unknown error');
             return result;
@@ -298,7 +312,7 @@
             const userListDiv = document.getElementById('user-list');
             userListDiv.innerHTML = '<p class="text-gray-400">Loading users...</p>';
             const querySnapshot = await getDocs(collection(db, `artifacts/${appId}/users`));
-            userListDiv.innerHTML = querySnapshot.docs.map(doc => { const user = doc.data(); return `<div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg mb-2"><div><p class="text-white font-semibold">${user.email || 'Anonymous'}</p><p class="text-xs text-gray-400 font-mono">${doc.id}</p><p class="text-xs ${user.accessGranted ? 'text-green-400' : 'text-yellow-400'}">${user.accessGranted ? 'Access Granted' : 'Trial/Expired'}</p></div><div class="flex gap-2"><button onclick="window.grantUserAccess('${doc.id}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Grant</button><button onclick="window.banUser('${doc.id}', ${!user.banned})" class="text-xs ${user.banned ? 'bg-yellow-500' : 'bg-red-600'} hover:bg-red-700 text-white px-3 py-1 rounded-md">${user.banned ? 'Unban' : 'Ban'}</button></div></div>`; }).join('');
+            userListDiv.innerHTML = querySnapshot.docs.map(doc => { const user = doc.data(); return `<div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg"><div><p class="text-white font-semibold">${user.email || 'Anonymous'}</p><p class="text-xs text-gray-400 font-mono">${doc.id}</p><p class="text-xs ${user.accessGranted ? 'text-green-400' : 'text-yellow-400'}">${user.accessGranted ? 'Access Granted' : 'Trial/Expired'}</p></div><div class="flex gap-2"><button onclick="window.grantUserAccess('${doc.id}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Grant</button><button onclick="window.banUser('${doc.id}', ${!user.banned})" class="text-xs ${user.banned ? 'bg-yellow-500' : 'bg-red-600'} hover:bg-red-700 text-white px-3 py-1 rounded-md">${user.banned ? 'Unban' : 'Ban'}</button></div></div>`; }).join('');
         }
 
         window.grantUserAccess = async (uid) => { if (confirm('Are you sure?')) { await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { accessGranted: true }); loadUsers(); } };
