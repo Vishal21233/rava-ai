@@ -5,3 +5,17 @@
   to = "/index.html"
   status = 200
 
+# Yeh naya section Netlify ko placeholders replace karne ke liye bolta hai
+[build.processing]
+  skip_processing = false
+[build.processing.css]
+  bundle = false
+  minify = false
+[build.processing.js]
+  bundle = false
+  minify = false
+[build.processing.html]
+  pretty_urls = false
+[build.processing.images]
+  compress = false
+
