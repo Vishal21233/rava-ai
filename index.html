@@ -14,10 +14,10 @@
         #app-view, #admin-view-container { height: 100%; max-height: -webkit-fill-available; }
         #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #0a0a0a; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .bg-blurry { background-color: rgba(10, 10, 10, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+        .bg-blurry { background-color: rgba(10, 10, 10, 0); } /* FULLY TRANSPARENT NOW */
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 20px; }
-        .ai-message-content p, .ai-message-content li, .ai-message-content h1, .ai-message-content h2, .ai-message-content h3 { margin-bottom: 0.75rem; }
+        .ai-message-content p, .ai-message-content li, .ai-message-content h1 { margin-bottom: 0.75rem; }
         .ai-message-content code { background-color: #1a202c; border: 1px solid #2d3748; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; word-break: break-all; }
         .ai-message-content pre { background-color: #1a202c; border: 1px solid #2d3748; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; overflow-x: auto; }
         .glowing-border { position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden; }
@@ -28,6 +28,25 @@
         
         @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .chat-message { animation: slideInUp 0.5s ease-out forwards; }
+
+        /* New Thinking Indicator Style */
+        .thinking-box {
+            position: relative;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            background-color: rgba(31, 41, 55, 0.5); /* Semi-transparent */
+            overflow: hidden;
+        }
+        .thinking-box::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: conic-gradient(transparent, rgba(139, 92, 246, 0.8), transparent 30%);
+            animation: rotate 4s linear infinite;
+        }
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        .thinking-box-content { position: relative; z-index: 1; }
     </style>
 </head>
 <body class="antialiased">
@@ -37,7 +56,7 @@
     <div id="app-root" class="w-full flex flex-col items-center justify-center">
 
         <div id="login-view" class="w-full h-full flex items-center justify-center hidden p-4">
-            <div class="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/10">
+             <div class="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-indigo-500/10">
                 <h1 class="text-3xl font-bold text-center mb-2 text-white">Welcome to <span class="text-indigo-400">RaVa</span> AI</h1>
                 <p class="text-center text-slate-400 mb-8">Sign in to continue</p>
                 <div id="email-password-form">
@@ -97,9 +116,11 @@
             <main class="flex-1 flex flex-col p-2 sm:p-4 overflow-hidden">
                 <div id="chat-container" class="flex-1 overflow-y-auto pr-2">
                     <div class="flex items-start gap-3 mb-6 chat-message">
-                        <div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
+                        <div class="bg-slate-700 p-2 rounded-full flex-shrink-0">
+                            <svg class="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V4m0 16v-2M8 12a4 4 0 118 0 4 4 0 01-8 0z"></path></svg>
+                        </div>
                         <div>
-                            <p class="font-bold text-indigo-400">RaVa AI</p>
+                            <p class="font-bold text-indigo-400">RaVa</p>
                             <div id="ai-greeting" class="text-white mt-1">Hello! How can I assist you today?</div>
                         </div>
                     </div>
@@ -131,7 +152,7 @@
 
         <div id="admin-view-container" class="w-full max-w-5xl flex-col flex bg-blurry sm:rounded-2xl border-t sm:border border-slate-700/50 shadow-2xl shadow-black/50 overflow-hidden hidden">
             <div id="admin-login-form" class="w-full h-full flex items-center justify-center p-4">
-                <div class="w-full max-w-sm bg-gray-900/50 backdrop-blur-xl border border-blue-500/50 rounded-2xl p-8 shadow-2xl shadow-blue-500/20">
+                 <div class="w-full max-w-sm bg-gray-900/50 backdrop-blur-xl border border-blue-500/50 rounded-2xl p-8 shadow-2xl shadow-blue-500/20">
                      <h2 class="text-2xl font-bold text-center text-white mb-6">Admin Panel Login</h2>
                      <input id="admin-pass" type="password" placeholder="Admin Password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
                      <div id="admin-auth-error" class="text-red-400 text-sm mb-4 hidden"></div>
@@ -189,30 +210,28 @@
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
                     radius: Math.random() * 1.5,
-                    vx: Math.floor(Math.random() * 50) - 25,
-                    vy: Math.floor(Math.random() * 50) - 25
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
                 });
             }
             function draw() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.globalCompositeOperation = "lighter";
-                for (let i = 0, x = stars.length; i < x; i++) {
+                for (let i = 0; i < stars.length; i++) {
                     let s = stars[i];
                     ctx.fillStyle = "#fff";
                     ctx.beginPath();
                     ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
                     ctx.fill();
-                    ctx.fillStyle = 'black';
-                    ctx.stroke();
                 }
             }
             function update() {
-                for (let i = 0, x = stars.length; i < x; i++) {
+                for (let i = 0; i < stars.length; i++) {
                     let s = stars[i];
-                    s.x += s.vx / 60;
-                    s.y += s.vy / 60;
-                    if (s.x < 0 || s.x > canvas.width) s.vx = -s.vx;
-                    if (s.y < 0 || s.y > canvas.height) s.vy = -s.vy;
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    if (s.x < 0 || s.x > canvas.width) s.x = s.x < 0 ? canvas.width : 0;
+                    if (s.y < 0 || s.y > canvas.height) s.y = s.y < 0 ? canvas.height : 0;
                 }
             }
             function tick() {
@@ -231,6 +250,9 @@
         }
 
         onAuthStateChanged(auth, async (user) => {
+            const path = window.location.pathname;
+            if (path.includes('/random') || path.includes('/admin')) return showView('admin');
+
             if (user && !user.isAnonymous) {
                 currentUser = user; userInfo.classList.remove('hidden'); guestInfo.classList.add('hidden');
                 const userRef = doc(db, `artifacts/${appId}/users`, user.uid);
@@ -243,19 +265,12 @@
                 if (userData.banned) { alert("Your account has been banned."); return signOut(auth); }
                 const isTrialExpired = userData.createdAt ? (Date.now() - userData.createdAt.toDate().getTime()) > (7 * 24 * 60 * 60 * 1000) : true;
                 if (!userData.accessGranted && isTrialExpired) return showView('pricing');
-                
-                const path = window.location.pathname;
-                if (path.includes('/random') || path.includes('/admin')) showView('admin'); 
-                else if (location.hash !== '#pricing') showView('app');
-
+                if (location.hash !== '#pricing') showView('app');
             } else {
                 currentUser = auth.currentUser; userInfo.classList.add('hidden'); guestInfo.classList.remove('hidden');
-                userStatus = 'guest'; // Reset status on logout
+                userStatus = 'guest';
                 if (!currentUser) signInAnonymously(auth).catch(e => console.error("Anonymous sign-in failed:", e));
-                
-                const path = window.location.pathname;
-                if (path.includes('/random') || path.includes('/admin')) showView('admin'); 
-                else if (location.hash !== '#pricing') showView('app');
+                if (location.hash !== '#pricing') showView('app');
             }
         });
 
@@ -279,7 +294,7 @@
             currentMode = mode;
             chatModeBtn.classList.toggle('bg-indigo-600', mode === 'chat'); chatModeBtn.classList.toggle('text-white', mode === 'chat');
             imageModeBtn.classList.toggle('bg-indigo-600', mode === 'image'); imageModeBtn.classList.toggle('text-white', mode === 'image');
-            promptInput.placeholder = mode === 'chat' ? "Ask RaVa AI anything..." : "Describe an image to create or style...";
+            promptInput.placeholder = mode === 'chat' ? "Ask RaVa anything..." : "Describe an image to create or style...";
         }
         chatModeBtn.addEventListener('click', () => switchMode('chat')); imageModeBtn.addEventListener('click', () => switchMode('image'));
         
@@ -288,7 +303,7 @@
         async function handleSendMessage() {
             const prompt = promptInput.value.trim(); if (!prompt && !imageBase64) return;
             sendBtn.disabled = true; addUserMessage(prompt, imageBase64); promptInput.value = '';
-            addBotMessage("...", true);
+            addBotMessage("", true);
             try {
                 const response = await callProxyAPI(prompt, imageBase64, currentMode, userStatus);
                 const responseText = response.candidates[0].content.parts[0].text;
@@ -320,7 +335,11 @@
         }
 
         function addBotMessage(text, isTyping = false) {
-            const messageHtml = `<div class="flex items-start gap-3 mb-6 ai-message ${isTyping ? 'typing-indicator' : ''} chat-message"><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div><div class="max-w-[80%]"><p class="font-bold text-indigo-400">RaVa AI</p><div class="text-white mt-1 ai-message-content break-words">${text}</div></div></div>`;
+            let contentHtml = text;
+            if (isTyping) {
+                contentHtml = `<div class="thinking-box"><div class="thinking-box-content text-center text-slate-300">RaVa is thinking...</div></div>`;
+            }
+            const messageHtml = `<div class="flex items-start gap-3 mb-6 ai-message ${isTyping ? 'typing-indicator' : ''} chat-message"><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V4m0 16v-2M8 12a4 4 0 118 0 4 4 0 01-8 0z"></path></svg></div><div class="max-w-[80%]"><p class="font-bold text-indigo-400">RaVa</p><div class="text-white mt-1 ai-message-content break-words">${contentHtml}</div></div></div>`;
             chatContainer.insertAdjacentHTML('beforeend', messageHtml); chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
