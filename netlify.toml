@@ -1,5 +1,7 @@
 # Yeh rule Netlify ko batata hai ki har request ko index.html par bhejo
+# Taaki /random jaisa custom URL kaam kar sake
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
+

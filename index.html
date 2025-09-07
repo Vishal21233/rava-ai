@@ -9,29 +9,30 @@
     
     <style>
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: 'Inter', sans-serif; background-color: #000; color: #E5E7EB; }
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #E5E7EB; }
         #app-root { height: 100%; }
         #app-view, #admin-view-container { height: 100%; max-height: -webkit-fill-available; }
-        #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; overflow: hidden; }
-        .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle linear infinite; }
-        @keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-        .bg-blurry { background-color: rgba(10, 10, 10, 0.8); backdrop-filter: blur(12px); }
+        #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #0a0a0a; overflow: hidden; }
+        canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .bg-blurry { background-color: rgba(10, 10, 10, 0.7); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
         .chat-container::-webkit-scrollbar { width: 6px; }
-        .chat-container::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 20px; }
-        .ai-message-content p { margin-bottom: 0.5rem; }
-        .ai-message-content h1, .ai-message-content h2, .ai-message-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 600; border-bottom: 1px solid #374151; padding-bottom: 0.25rem;}
-        .ai-message-content code { background-color: #111827; border: 1px solid #374151; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; word-break: break-all; }
-        .ai-message-content pre { background-color: #0d1117; border: 1px solid #374151; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; overflow-x: auto; }
+        .chat-container::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 20px; }
+        .ai-message-content p, .ai-message-content li, .ai-message-content h1, .ai-message-content h2, .ai-message-content h3 { margin-bottom: 0.75rem; }
+        .ai-message-content code { background-color: #1a202c; border: 1px solid #2d3748; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; word-break: break-all; }
+        .ai-message-content pre { background-color: #1a202c; border: 1px solid #2d3748; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; overflow-x: auto; }
         .glowing-border { position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden; }
-        .glowing-border:focus-within { border-color: #6366f1; }
-        .glowing-border::after { content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px; background: linear-gradient(90deg, transparent, #4f46e5, #ec4899, #22d3ee, transparent); animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out; }
+        .glowing-border:focus-within { border-color: #818cf8; }
+        .glowing-border::after { content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px; background: linear-gradient(90deg, transparent, #6366f1, #ec4899, #38bdf8, transparent); animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out; }
         .glowing-border:focus-within::after { opacity: 1; }
         @keyframes move-light { 0% { transform: translateX(0); } 100% { transform: translateX(25%); } }
+        
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .chat-message { animation: slideInUp 0.5s ease-out forwards; }
     </style>
 </head>
 <body class="antialiased">
     
-    <div id="space-bg"></div>
+    <canvas id="space-bg"></canvas>
 
     <div id="app-root" class="w-full flex flex-col items-center justify-center">
 
@@ -95,7 +96,7 @@
             </header>
             <main class="flex-1 flex flex-col p-2 sm:p-4 overflow-hidden">
                 <div id="chat-container" class="flex-1 overflow-y-auto pr-2">
-                    <div class="flex items-start gap-3 mb-6">
+                    <div class="flex items-start gap-3 mb-6 chat-message">
                         <div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div>
                         <div>
                             <p class="font-bold text-indigo-400">RaVa AI</p>
@@ -175,18 +176,51 @@
             ['login-view', 'pricing-view', 'app-view', 'admin-view-container', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn', 'pricing-btn', 'login-prompt-btn', 'send-btn', 'chat-container'].map(id => document.getElementById(id));
         
         let currentUser = null, imageBase64 = null, currentMode = 'chat';
-        // <<<< NAYI CHEEZ: User ka status yaad rakhne ke liye >>>>
         let userStatus = 'guest';
 
         function createStars() {
-            const space = document.getElementById('space-bg');
-            if(space.children.length > 0) return;
-            for (let i = 0; i < 150; i++) {
-                const star = Object.assign(document.createElement('div'), { className: 'star' });
-                const size = Math.random() * 2.5 + 1;
-                Object.assign(star.style, { width: `${size}px`, height: `${size}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, animationDuration: `${Math.random() * 5 + 3}s`, animationDelay: `${Math.random() * 4}s`});
-                space.appendChild(star);
+            const canvas = document.getElementById('space-bg');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let stars = [];
+            for (let i = 0; i < 400; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    vx: Math.floor(Math.random() * 50) - 25,
+                    vy: Math.floor(Math.random() * 50) - 25
+                });
             }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = "lighter";
+                for (let i = 0, x = stars.length; i < x; i++) {
+                    let s = stars[i];
+                    ctx.fillStyle = "#fff";
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.fillStyle = 'black';
+                    ctx.stroke();
+                }
+            }
+            function update() {
+                for (let i = 0, x = stars.length; i < x; i++) {
+                    let s = stars[i];
+                    s.x += s.vx / 60;
+                    s.y += s.vy / 60;
+                    if (s.x < 0 || s.x > canvas.width) s.vx = -s.vx;
+                    if (s.y < 0 || s.y > canvas.height) s.vy = -s.vy;
+                }
+            }
+            function tick() {
+                draw();
+                update();
+                requestAnimationFrame(tick);
+            }
+            tick();
         }
 
         function showView(viewName) {
@@ -209,12 +243,19 @@
                 if (userData.banned) { alert("Your account has been banned."); return signOut(auth); }
                 const isTrialExpired = userData.createdAt ? (Date.now() - userData.createdAt.toDate().getTime()) > (7 * 24 * 60 * 60 * 1000) : true;
                 if (!userData.accessGranted && isTrialExpired) return showView('pricing');
-                if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } else if (location.hash !== '#pricing') { showView('app'); }
+                
+                const path = window.location.pathname;
+                if (path.includes('/random') || path.includes('/admin')) showView('admin'); 
+                else if (location.hash !== '#pricing') showView('app');
+
             } else {
                 currentUser = auth.currentUser; userInfo.classList.add('hidden'); guestInfo.classList.remove('hidden');
                 userStatus = 'guest'; // Reset status on logout
                 if (!currentUser) signInAnonymously(auth).catch(e => console.error("Anonymous sign-in failed:", e));
-                if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } else if (location.hash !== '#pricing') { showView('app'); }
+                
+                const path = window.location.pathname;
+                if (path.includes('/random') || path.includes('/admin')) showView('admin'); 
+                else if (location.hash !== '#pricing') showView('app');
             }
         });
 
@@ -239,8 +280,6 @@
             chatModeBtn.classList.toggle('bg-indigo-600', mode === 'chat'); chatModeBtn.classList.toggle('text-white', mode === 'chat');
             imageModeBtn.classList.toggle('bg-indigo-600', mode === 'image'); imageModeBtn.classList.toggle('text-white', mode === 'image');
             promptInput.placeholder = mode === 'chat' ? "Ask RaVa AI anything..." : "Describe an image to create or style...";
-            imageUploadBtn.classList.toggle('hidden', mode === 'image');
-            if (mode === 'image') removeImage();
         }
         chatModeBtn.addEventListener('click', () => switchMode('chat')); imageModeBtn.addEventListener('click', () => switchMode('image'));
         
@@ -248,22 +287,21 @@
         
         async function handleSendMessage() {
             const prompt = promptInput.value.trim(); if (!prompt && !imageBase64) return;
-            sendBtn.disabled = true; addUserMessage(prompt, currentMode === 'chat' ? imageBase64 : null); promptInput.value = '';
+            sendBtn.disabled = true; addUserMessage(prompt, imageBase64); promptInput.value = '';
             addBotMessage("...", true);
             try {
-                // <<<< NAYI CHEEZ: User ka status API call ke saath bhejo >>>>
                 const response = await callProxyAPI(prompt, imageBase64, currentMode, userStatus);
-                
-                // <<<< NAYI CHEEZ: Agar secret word sahi ho to status update karo >>>>
                 const responseText = response.candidates[0].content.parts[0].text;
-                if (responseText.includes('Welcome back, sir.')) {
-                    userStatus = 'master';
-                } else if (responseText.includes("It's so good to hear from you.")) {
-                    userStatus = 'family';
+                if (responseText.includes('Welcome back, Master!')) userStatus = 'master'; 
+                else if (responseText.includes("Welcome! It's so good to hear from you.")) userStatus = 'family';
+                
+                const b64 = response.candidates[0].content.parts.find(p => p.inlineData)?.inlineData?.data;
+                if (b64) {
+                    updateBotMessageWithImage(b64);
+                } else {
+                    updateBotMessage(responseText);
                 }
 
-                if (currentMode === 'chat') { updateBotMessage(responseText); } 
-                else { const b64 = response.candidates[0].content.parts.find(p => p.inlineData).inlineData.data; updateBotMessageWithImage(b64); }
             } catch (error) { console.error("Full API Error:", error); updateBotMessage(`Sorry, an error occurred: **Details:** ${error.message}`); } 
             finally { sendBtn.disabled = false; removeImage(); }
         }
@@ -277,12 +315,12 @@
 
         function addUserMessage(text, b64) {
             let imageHtml = b64 ? `<img src="data:image/jpeg;base64,${b64}" class="rounded-lg max-w-xs mt-2">` : '';
-            const messageHtml = `<div class="flex items-start gap-3 mb-6 justify-end"><div class="max-w-[80%]"><p class="font-bold text-right text-indigo-300">You</p><div class="bg-indigo-900/50 p-3 rounded-lg mt-1 text-white break-words">${text} ${imageHtml}</div></div><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div></div>`;
+            const messageHtml = `<div class="flex items-start gap-3 mb-6 justify-end chat-message"><div class="max-w-[80%]"><p class="font-bold text-right text-indigo-300">You</p><div class="bg-indigo-900/50 p-3 rounded-lg mt-1 text-white break-words">${text} ${imageHtml}</div></div><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div></div>`;
             chatContainer.insertAdjacentHTML('beforeend', messageHtml); chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
         function addBotMessage(text, isTyping = false) {
-            const messageHtml = `<div class="flex items-start gap-3 mb-6 ai-message ${isTyping ? 'typing-indicator' : ''}"><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div><div class="max-w-[80%]"><p class="font-bold text-indigo-400">RaVa AI</p><div class="text-white mt-1 ai-message-content break-words">${text}</div></div></div>`;
+            const messageHtml = `<div class="flex items-start gap-3 mb-6 ai-message ${isTyping ? 'typing-indicator' : ''} chat-message"><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div><div class="max-w-[80%]"><p class="font-bold text-indigo-400">RaVa AI</p><div class="text-white mt-1 ai-message-content break-words">${text}</div></div></div>`;
             chatContainer.insertAdjacentHTML('beforeend', messageHtml); chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
@@ -321,12 +359,9 @@
         const createRandomId = () => Math.random().toString(36).substring(2, 15);
         
         function init() {
-            if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } 
-            else {
-                showView('app');
-                document.getElementById('ai-greeting').textContent = ["Hi, what's up?", "What can I help you with today?"][Math.floor(Math.random() * 2)];
-                createStars();
-            }
+            const path = window.location.pathname;
+            if (path.includes('/random') || path.includes('/admin')) { showView('admin'); } 
+            else { showView('app'); document.getElementById('ai-greeting').textContent = ["Hi, what's up?", "What can I help you with today?"][Math.floor(Math.random() * 2)]; createStars(); }
             setupAuthListeners();
         }
         init();
