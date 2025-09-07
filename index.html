@@ -8,52 +8,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* This is the key fix for mobile layout */
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #000;
-            color: #E5E7EB;
-        }
-        #app-root {
-            height: 100%;
-        }
-        #app-view {
-            height: 100%;
-            max-height: -webkit-fill-available; /* For mobile safari */
-        }
-        #space-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: #000; overflow: hidden;
-        }
-        .star {
-            position: absolute; background-color: white; border-radius: 50%;
-            animation: twinkle linear infinite;
-        }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #E5E7EB; }
+        #app-root { height: 100%; }
+        #app-view, #admin-view-container { height: 100%; max-height: -webkit-fill-available; }
+        #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #000; overflow: hidden; }
+        .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle linear infinite; }
         @keyframes twinkle { 0%, 100% { opacity: 0; } 50% { opacity: 1; } }
-        .bg-blurry {
-            background-color: rgba(10, 10, 10, 0.8);
-            backdrop-filter: blur(12px);
-        }
+        .bg-blurry { background-color: rgba(10, 10, 10, 0.8); backdrop-filter: blur(12px); }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: #374151; border-radius: 20px; }
         .ai-message-content p { margin-bottom: 0.5rem; }
         .ai-message-content h1, .ai-message-content h2, .ai-message-content h3 { margin-top: 1rem; margin-bottom: 0.5rem; font-weight: 600; border-bottom: 1px solid #374151; padding-bottom: 0.25rem;}
-        .ai-message-content ul, .ai-message-content ol { margin-left: 1.5rem; margin-bottom: 0.5rem; }
         .ai-message-content code { background-color: #111827; border: 1px solid #374151; padding: 0.2rem 0.4rem; border-radius: 4px; font-family: monospace; word-break: break-all; }
         .ai-message-content pre { background-color: #0d1117; border: 1px solid #374151; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; overflow-x: auto; }
-        .glowing-border {
-            position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden;
-        }
+        .glowing-border { position: relative; border: 1px solid #374151; transition: box-shadow 0.3s ease-in-out; overflow: hidden; }
         .glowing-border:focus-within { border-color: #6366f1; }
-        .glowing-border::after {
-            content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px;
-            background: linear-gradient(90deg, transparent, #4f46e5, #ec4899, #22d3ee, transparent);
-            animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out;
-        }
+        .glowing-border::after { content: ''; position: absolute; bottom: 0; left: -50%; width: 200%; height: 3px; background: linear-gradient(90deg, transparent, #4f46e5, #ec4899, #22d3ee, transparent); animation: move-light 4s linear infinite; opacity: 0; transition: opacity 0.3s ease-in-out; }
         .glowing-border:focus-within::after { opacity: 1; }
         @keyframes move-light { 0% { transform: translateX(0); } 100% { transform: translateX(25%); } }
     </style>
@@ -86,7 +57,7 @@
         </div>
 
         <div id="pricing-view" class="w-full h-full flex items-center justify-center hidden p-4">
-            <div class="w-full max-w-4xl bg-slate-900/50 backdrop-blur-xl border border-indigo-500/50 rounded-2xl p-6 sm:p-8 text-center shadow-2xl shadow-indigo-500/20">
+             <div class="w-full max-w-4xl bg-slate-900/50 backdrop-blur-xl border border-indigo-500/50 rounded-2xl p-6 sm:p-8 text-center shadow-2xl shadow-indigo-500/20">
                 <h2 class="text-3xl font-bold text-white mb-4">Unlock Full Potential</h2>
                 <p class="text-slate-300 mb-8">Choose a plan to get unlimited access.</p>
                 <div class="flex flex-col sm:flex-row gap-8">
@@ -107,7 +78,7 @@
         </div>
 
         <div id="app-view" class="w-full max-w-5xl flex-col flex bg-blurry sm:rounded-2xl border-t sm:border border-slate-700/50 shadow-2xl shadow-black/50 overflow-hidden">
-            <header class="flex justify-between items-center gap-y-2 p-3 border-b border-slate-700 flex-shrink-0">
+             <header class="flex justify-between items-center gap-y-2 p-3 border-b border-slate-700 flex-shrink-0">
                 <div class="text-left">
                     <h1 class="text-lg font-bold text-white">RaVa <span class="text-indigo-400">AI</span></h1>
                     <p class="text-xs text-slate-500 -mt-1 hidden sm:block">By Vishal Goswami</p>
@@ -156,6 +127,26 @@
                 </div>
             </main>
         </div>
+
+        <div id="admin-view-container" class="w-full max-w-5xl flex-col flex bg-blurry sm:rounded-2xl border-t sm:border border-slate-700/50 shadow-2xl shadow-black/50 overflow-hidden hidden">
+            <div id="admin-login-form" class="w-full h-full flex items-center justify-center p-4">
+                <div class="w-full max-w-sm bg-gray-900/50 backdrop-blur-xl border border-blue-500/50 rounded-2xl p-8 shadow-2xl shadow-blue-500/20">
+                     <h2 class="text-2xl font-bold text-center text-white mb-6">Admin Panel Login</h2>
+                     <input id="admin-pass" type="password" placeholder="Admin Password" class="w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-3 mb-4 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                     <div id="admin-auth-error" class="text-red-400 text-sm mb-4 hidden"></div>
+                     <button id="admin-login-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition">Login</button>
+                </div>
+            </div>
+            <div id="admin-dashboard" class="hidden w-full h-full flex flex-col">
+                 <h2 class="text-3xl font-bold text-white p-6 flex-shrink-0">Admin Dashboard</h2>
+                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 overflow-y-auto">
+                    <div class="bg-gray-900/50 p-6 rounded-xl border border-gray-700">
+                        <h3 class="text-xl font-semibold mb-4 text-white">User Management</h3>
+                        <div id="user-list" class="max-h-96 overflow-y-auto"></div>
+                    </div>
+                 </div>
+            </div>
+        </div>
         
     </div>
 
@@ -173,32 +164,35 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+        
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
         const appId = 'rava-ai-app';
-        const [loginView, pricingView, appView, adminView, adminLoginForm, adminDashboard, userInfo, guestInfo, promptInput, chatModeBtn, imageModeBtn, imageUploadBtn, pricingBtn, loginPromptBtn] = 
-            ['login-view', 'pricing-view', 'app-view', 'admin-view', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn', 'pricing-btn', 'login-prompt-btn'].map(id => document.getElementById(id));
+
+        const [loginView, pricingView, appView, adminViewContainer, adminLoginForm, adminDashboard, userInfo, guestInfo, promptInput, chatModeBtn, imageModeBtn, imageUploadBtn, pricingBtn, loginPromptBtn, sendBtn, chatContainer] = 
+            ['login-view', 'pricing-view', 'app-view', 'admin-view-container', 'admin-login-form', 'admin-dashboard', 'user-info', 'guest-info', 'prompt-input', 'chat-mode-btn', 'image-mode-btn', 'image-upload-btn', 'pricing-btn', 'login-prompt-btn', 'send-btn', 'chat-container'].map(id => document.getElementById(id));
+        
         let currentUser = null, imageBase64 = null, currentMode = 'chat';
+
         function createStars() {
             const space = document.getElementById('space-bg');
             if(space.children.length > 0) return;
             for (let i = 0; i < 150; i++) {
                 const star = Object.assign(document.createElement('div'), { className: 'star' });
                 const size = Math.random() * 2.5 + 1;
-                Object.assign(star.style, {
-                    width: `${size}px`, height: `${size}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
-                    animationDuration: `${Math.random() * 5 + 3}s`, animationDelay: `${Math.random() * 4}s`
-                });
+                Object.assign(star.style, { width: `${size}px`, height: `${size}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, animationDuration: `${Math.random() * 5 + 3}s`, animationDelay: `${Math.random() * 4}s`});
                 space.appendChild(star);
             }
         }
+
         function showView(viewName) {
-            [loginView, pricingView, appView].forEach(v => v.classList.add('hidden'));
+            [loginView, pricingView, appView, adminViewContainer].forEach(v => v.classList.add('hidden'));
             document.getElementById('app-root').classList.toggle('sm:p-4', ['login', 'pricing'].includes(viewName));
-            document.getElementById(`${viewName}-view`).classList.remove('hidden');
+            document.getElementById(`${viewName === 'admin' ? 'admin-view-container' : viewName + '-view'}`).classList.remove('hidden');
         }
+
         onAuthStateChanged(auth, async (user) => {
             if (user && !user.isAnonymous) {
                 currentUser = user; userInfo.classList.remove('hidden'); guestInfo.classList.add('hidden');
@@ -219,6 +213,7 @@
                 if (location.hash !== '#pricing') showView('app');
             }
         });
+
         function setupAuthListeners() {
             document.getElementById('google-signin-btn').addEventListener('click', () => signInWithPopup(auth, provider).catch(handleAuthError));
             document.getElementById('login-btn').addEventListener('click', () => signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value).catch(handleAuthError));
@@ -228,10 +223,13 @@
             document.getElementById('back-to-chat-btn').addEventListener('click', () => { location.hash = ''; showView('app'); });
             document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
         }
+
         function handleAuthError(error) {
-            document.getElementById('auth-error').textContent = error.message.replace('Firebase: ', '');
-            document.getElementById('auth-error').classList.remove('hidden');
+            const errorDiv = document.getElementById('auth-error');
+            errorDiv.textContent = error.message.replace('Firebase: ', '');
+            errorDiv.classList.remove('hidden');
         }
+
         function switchMode(mode) {
             currentMode = mode;
             chatModeBtn.classList.toggle('bg-indigo-600', mode === 'chat'); chatModeBtn.classList.toggle('text-white', mode === 'chat');
@@ -241,8 +239,9 @@
             if (mode === 'image') removeImage();
         }
         chatModeBtn.addEventListener('click', () => switchMode('chat')); imageModeBtn.addEventListener('click', () => switchMode('image'));
-        const sendBtn = document.getElementById('send-btn'); const chatContainer = document.getElementById('chat-container');
+        
         sendBtn.addEventListener('click', handleSendMessage); promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
+        
         async function handleSendMessage() {
             const prompt = promptInput.value.trim(); if (!prompt && !imageBase64) return;
             sendBtn.disabled = true; addUserMessage(prompt, currentMode === 'chat' ? imageBase64 : null); promptInput.value = '';
@@ -251,57 +250,67 @@
                 const response = await callProxyAPI(prompt, imageBase64, currentMode);
                 if (currentMode === 'chat') { updateBotMessage(response.candidates[0].content.parts[0].text); } 
                 else { const b64 = response.candidates[0].content.parts.find(p => p.inlineData).inlineData.data; updateBotMessageWithImage(b64); }
-            } catch (error) { console.error("API Error:", error); updateBotMessage(`Sorry, an error occurred: ${error.message}`); } 
+            } catch (error) { console.error("Full API Error:", error); updateBotMessage(`Sorry, an error occurred: **Details:** ${error.message}`); } 
             finally { sendBtn.disabled = false; removeImage(); }
         }
+
         async function callProxyAPI(prompt, base64Data, mode) {
             const response = await fetch('/.netlify/functions/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, base64Data, mode }) });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.error || 'Unknown error');
+            if (!response.ok) throw new Error(JSON.stringify(result.error) || 'Unknown error');
             return result;
         }
+
         function addUserMessage(text, b64) {
             let imageHtml = b64 ? `<img src="data:image/jpeg;base64,${b64}" class="rounded-lg max-w-xs mt-2">` : '';
             const messageHtml = `<div class="flex items-start gap-3 mb-6 justify-end"><div class="max-w-[80%]"><p class="font-bold text-right text-indigo-300">You</p><div class="bg-indigo-900/50 p-3 rounded-lg mt-1 text-white break-words">${text} ${imageHtml}</div></div><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg></div></div>`;
             chatContainer.insertAdjacentHTML('beforeend', messageHtml); chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+
         function addBotMessage(text, isTyping = false) {
             const messageHtml = `<div class="flex items-start gap-3 mb-6 ai-message ${isTyping ? 'typing-indicator' : ''}"><div class="bg-slate-700 p-2 rounded-full flex-shrink-0"><svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg></div><div class="max-w-[80%]"><p class="font-bold text-indigo-400">RaVa AI</p><div class="text-white mt-1 ai-message-content break-words">${text}</div></div></div>`;
             chatContainer.insertAdjacentHTML('beforeend', messageHtml); chatContainer.scrollTop = chatContainer.scrollHeight;
         }
+
         function updateBotMessage(text) {
             const typingIndicator = chatContainer.querySelector('.typing-indicator .ai-message-content');
             if (typingIndicator) { typingIndicator.innerHTML = marked.parse(text); typingIndicator.closest('.typing-indicator').classList.remove('typing-indicator'); }
         }
+
         function updateBotMessageWithImage(base64Image) {
             const typingIndicator = chatContainer.querySelector('.typing-indicator .ai-message-content');
             if (typingIndicator) { typingIndicator.innerHTML = `<img src="data:image/png;base64,${base64Image}" class="rounded-lg max-w-full">`; typingIndicator.closest('.typing-indicator').classList.remove('typing-indicator'); }
         }
+
         const imageUpload = document.getElementById('image-upload');
         imageUploadBtn.addEventListener('click', () => imageUpload.click());
         document.getElementById('remove-image-btn').addEventListener('click', removeImage);
-        imageUpload.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    imageBase64 = event.target.result.replace('data:', '').replace(/^.+,/, '');
-                    document.getElementById('image-preview').src = event.target.result;
-                    document.getElementById('image-preview-container').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+        imageUpload.addEventListener('change', (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (event) => { imageBase64 = event.target.result.replace('data:', '').replace(/^.+,/, ''); document.getElementById('image-preview').src = event.target.result; document.getElementById('image-preview-container').classList.remove('hidden'); }; reader.readAsDataURL(file); } });
         function removeImage() { imageBase64 = null; imageUpload.value = ''; document.getElementById('image-preview-container').classList.add('hidden'); }
+        
+        document.getElementById('admin-login-btn').addEventListener('click', () => {
+            if (document.getElementById('admin-pass').value === 'MasterVishal@Rava') {
+                adminLoginForm.classList.add('hidden'); adminDashboard.classList.remove('hidden'); loadUsers();
+            } else { document.getElementById('admin-auth-error').textContent = 'Invalid Password.'; document.getElementById('admin-auth-error').classList.remove('hidden'); }
+        });
+        
+        async function loadUsers() {
+            const userListDiv = document.getElementById('user-list');
+            userListDiv.innerHTML = '<p class="text-gray-400">Loading users...</p>';
+            const querySnapshot = await getDocs(collection(db, `artifacts/${appId}/users`));
+            userListDiv.innerHTML = querySnapshot.docs.map(doc => { const user = doc.data(); return `<div class="flex justify-between items-center p-3 bg-gray-800 rounded-lg mb-2"><div><p class="text-white font-semibold">${user.email || 'Anonymous'}</p><p class="text-xs text-gray-400 font-mono">${doc.id}</p><p class="text-xs ${user.accessGranted ? 'text-green-400' : 'text-yellow-400'}">${user.accessGranted ? 'Access Granted' : 'Trial/Expired'}</p></div><div class="flex gap-2"><button onclick="window.grantUserAccess('${doc.id}')" class="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded-md">Grant</button><button onclick="window.banUser('${doc.id}', ${!user.banned})" class="text-xs ${user.banned ? 'bg-yellow-500' : 'bg-red-600'} hover:bg-red-700 text-white px-3 py-1 rounded-md">${user.banned ? 'Unban' : 'Ban'}</button></div></div>`; }).join('');
+        }
+
+        window.grantUserAccess = async (uid) => { if (confirm('Are you sure?')) { await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { accessGranted: true }); loadUsers(); } };
+        window.banUser = async (uid, shouldBan) => { if (confirm(`Are you sure?`)) { await updateDoc(doc(db, `artifacts/${appId}/users`, uid), { banned: shouldBan }); loadUsers(); } };
         window.handlePurchaseClick = () => { if (currentUser && !currentUser.isAnonymous) showContactModal(); else { alert('Please log in first.'); showView('login'); } }
         const createRandomId = () => Math.random().toString(36).substring(2, 15);
-        window.showContactModal = () => document.getElementById('contact-modal').classList.remove('hidden');
-        window.hideContactModal = () => document.getElementById('contact-modal').classList.add('hidden');
+        
         function init() {
-            if (location.pathname.match(/(\/admin|\/random)/)) { showView('admin'); } 
+            if (location.pathname.match(/(\/random|\/admin)/)) { showView('admin'); } 
             else {
                 showView('app');
-                document.getElementById('ai-greeting').textContent = ["Hi, what's up?", "What can I help you with today?", "Ask me anything! 😉", "Ready to explore some ideas? 🙄"][Math.floor(Math.random() * 4)];
+                document.getElementById('ai-greeting').textContent = ["Hi, what's up?", "What can I help you with today?"][Math.floor(Math.random() * 2)];
                 createStars();
             }
             setupAuthListeners();
