@@ -14,7 +14,7 @@
         #app-view, #admin-view-container, #login-view, #pricing-view, #maintenance-view { height: 100%; max-height: -webkit-fill-available; }
         #space-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: #0a0a0a; overflow: hidden; }
         canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .bg-blurry { background-color: rgba(10, 10, 10, 0); } /* FULLY TRANSPARENT */
+        .bg-blurry { background-color: rgba(10, 10, 10, 0); }
         .chat-container::-webkit-scrollbar { width: 6px; }
         .chat-container::-webkit-scrollbar-thumb { background-color: #4a5568; border-radius: 20px; }
         .ai-message-content p, .ai-message-content li, .ai-message-content h1 { margin-bottom: 0.75rem; }
@@ -31,6 +31,8 @@
         .thinking-box::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(transparent, rgba(139, 92, 246, 0.8), transparent 30%); animation: rotate 4s linear infinite; }
         @keyframes rotate { 100% { transform: rotate(360deg); } }
         .thinking-box-content { position: relative; z-index: 1; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .speaker-btn.loading svg { animation: spin 1s linear infinite; }
     </style>
 </head>
 <body class="antialiased">
@@ -82,13 +84,13 @@
                     <div class="bg-slate-800/60 p-8 rounded-xl border border-slate-700 flex-1">
                         <h3 class="text-2xl font-semibold text-white mb-2">Monthly</h3>
                         <p class="text-4xl font-bold text-indigo-400 mb-4">₹250</p>
-                        <button onclick="handlePurchaseClick()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
+                        <button id="contact-btn1" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
                     </div>
                     <div class="relative bg-slate-800/60 p-8 rounded-xl border border-sky-500 flex-1">
                          <span class="absolute top-0 right-0 -mt-3 mr-3 px-3 py-1 text-sm font-bold text-white bg-sky-500 rounded-full">BEST VALUE</span>
                         <h3 class="text-2xl font-semibold text-white mb-2">Yearly</h3>
                         <p class="text-4xl font-bold text-sky-400 mb-4">₹350</p>
-                        <button onclick="handlePurchaseClick()" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
+                        <button id="contact-btn2" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 rounded-lg transition duration-300">Contact Admin</button>
                     </div>
                 </div>
                  <button id="back-to-chat-btn" class="mt-8 text-slate-400 hover:text-white">Back to Chat</button>
@@ -127,6 +129,9 @@
                     <div id="guest-info" class="flex items-center justify-center gap-x-4 mb-3">
                         <button id="login-prompt-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition whitespace-nowrap">Login / Sign Up</button>
                         <button id="pricing-btn" class="flex-1 bg-slate-700 hover:bg-indigo-600 px-3 py-2 text-sm sm:text-base rounded-lg text-white font-semibold transition">Pricing</button>
+                    </div>
+                    <div id="image-actions" class="hidden flex items-center gap-x-2 mb-2">
+                        <button id="describe-image-btn" class="text-sm bg-sky-600 hover:bg-sky-700 text-white font-semibold py-1 px-3 rounded-lg transition">✨ Describe Image</button>
                     </div>
                     <div class="bg-slate-800 rounded-xl flex items-center glowing-border">
                         <textarea id="prompt-input" rows="1" placeholder="Ask RaVa AI anything..." class="w-full bg-transparent p-4 pr-24 sm:pr-28 text-white focus:outline-none resize-none"></textarea>
@@ -172,7 +177,6 @@
                         <div class="flex items-center justify-between p-3 bg-gray-800 rounded-lg">
                             <p class="text-white font-semibold">Maintenance Mode</p>
                             <button id="maintenance-toggle-btn" class="px-4 py-2 text-sm font-bold rounded-lg transition">
-                                <!-- Button state will be set by JS -->
                             </button>
                         </div>
                     </div>
@@ -183,6 +187,10 @@
     </div>
 
     <script type="module">
+        // BRO, YEH ERROR (auth/api-key-not-valid) TAB AATA HAI JAB NETLIFY MEIN
+        // VITE_FIREBASE_API_KEY GALAT HOTI HAI.
+        // PLEASE NETLIFY DASHBOARD MEIN JAO -> SITE SETTINGS -> BUILD & DEPLOY -> ENVIRONMENT
+        // AUR CHECK KARO KI AAPNE API KEY BILKUL SAHI PASTE KI HAI, BINA KISI EXTRA SPACE KE.
         const firebaseConfig = {
           apiKey: "%VITE_FIREBASE_API_KEY%",
           authDomain: "%VITE_FIREBASE_AUTH_DOMAIN%",
@@ -204,27 +212,73 @@
         const appId = 'rava-ai-app';
 
         let dom = {};
-        
+        let currentUser = null, imageBase64 = null, currentMode = 'chat';
+        let userStatus = 'guest';
+
         document.addEventListener('DOMContentLoaded', () => {
-            const ids = ['loginView', 'pricingView', 'appView', 'adminViewContainer', 'adminLoginForm', 'adminDashboard', 'userInfo', 'guestInfo', 'promptInput', 'chatModeBtn', 'imageModeBtn', 'imageUploadBtn', 'pricingBtn', 'loginPromptBtn', 'sendBtn', 'chatContainer', 'maintenanceView', 'googleSigninBtn', 'loginBtn', 'signupBtn', 'emailInput', 'passwordInput', 'authError', 'backToChatBtn', 'logoutBtn', 'removeImageBtn', 'imageUpload', 'imagePreviewContainer', 'adminPass', 'adminLoginBtn', 'adminAuthError', 'logoutAdminBtn', 'maintenanceToggleBtn', 'userList', 'aiGreeting', 'appRoot'];
+            const ids = ['loginView', 'pricingView', 'appView', 'adminViewContainer', 'adminLoginForm', 'adminDashboard', 'userInfo', 'guestInfo', 'promptInput', 'chatModeBtn', 'imageModeBtn', 'imageUploadBtn', 'pricingBtn', 'loginPromptBtn', 'sendBtn', 'chatContainer', 'maintenanceView', 'googleSigninBtn', 'loginBtn', 'signupBtn', 'emailInput', 'passwordInput', 'authError', 'backToChatBtn', 'logoutBtn', 'removeImageBtn', 'imageUpload', 'imagePreviewContainer', 'adminPass', 'adminLoginBtn', 'adminAuthError', 'logoutAdminBtn', 'maintenanceToggleBtn', 'userList', 'aiGreeting', 'appRoot', 'imageActions', 'describeImageBtn', 'contactBtn1', 'contactBtn2'];
             const kebabToCamel = str => str.replace(/-([a-z])/g, g => g[1].toUpperCase());
-            document.querySelectorAll('[id]').forEach(el => {
-                const camelId = kebabToCamel(el.id);
-                dom[camelId] = el;
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el) {
+                    const camelId = kebabToCamel(id);
+                    dom[camelId] = el;
+                }
             });
             init();
         });
 
-        let currentUser = null, imageBase64 = null, currentMode = 'chat';
-        let userStatus = 'guest';
-
-        function createStars() { /* Function remains the same */ }
+        function createStars() {
+            const canvas = document.getElementById('space-bg');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            let stars = [];
+            for (let i = 0; i < 400; i++) {
+                stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 1.5,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5
+                });
+            }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.globalCompositeOperation = "lighter";
+                for (let i = 0; i < stars.length; i++) {
+                    let s = stars[i];
+                    ctx.fillStyle = "#fff";
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, 2 * Math.PI);
+                    ctx.fill();
+                }
+            }
+            function update() {
+                for (let i = 0; i < stars.length; i++) {
+                    let s = stars[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    if (s.x < 0 || s.x > canvas.width) s.x = s.x < 0 ? canvas.width : 0;
+                    if (s.y < 0 || s.y > canvas.height) s.y = s.y < 0 ? canvas.height : 0;
+                }
+            }
+            function tick() {
+                draw();
+                update();
+                requestAnimationFrame(tick);
+            }
+            tick();
+        }
 
         function showView(viewName) {
-            [dom.loginView, dom.pricingView, dom.appView, dom.adminViewContainer, dom.maintenanceView].forEach(v => v.classList.add('hidden'));
+            [dom.loginView, dom.pricingView, dom.appView, dom.adminViewContainer, dom.maintenanceView].forEach(v => {
+                if(v) v.classList.add('hidden')
+            });
             dom.appRoot.classList.toggle('sm:p-4', ['login', 'pricing'].includes(viewName));
             const viewId = viewName === 'admin' ? 'adminViewContainer' : `${viewName}`;
-            dom[viewId].classList.remove('hidden');
+            if(dom[viewId]) dom[viewId].classList.remove('hidden');
         }
         
         async function checkMaintenanceAndInit() {
@@ -237,7 +291,6 @@
                     if (isMaintenance && !isAdminPage) {
                         showView('maintenance');
                     } else if (!isMaintenance && dom.maintenanceView && !dom.maintenanceView.classList.contains('hidden')) {
-                        // If maintenance was just turned off, reload to the main app
                         window.location.href = '/';
                     }
                 });
@@ -247,7 +300,6 @@
                 
                 const maintenanceDoc = await getDoc(maintenanceRef);
                  if (maintenanceDoc.exists() && maintenanceDoc.data().is_under_maintenance) {
-                    // Handled by snapshot, but initial check is good
                  } else {
                     showView('app');
                  }
@@ -276,6 +328,8 @@
             dom.pricingBtn.addEventListener('click', () => { location.hash = '#pricing'; showView('pricing'); });
             dom.backToChatBtn.addEventListener('click', () => { location.hash = ''; showView('app'); });
             dom.logoutBtn.addEventListener('click', () => signOut(auth));
+            dom.contactBtn1.addEventListener('click', () => handlePurchaseClick());
+            dom.contactBtn2.addEventListener('click', () => handlePurchaseClick());
         }
 
         function handleAuthError(error) {
@@ -289,37 +343,47 @@
             dom.imageModeBtn.classList.toggle('bg-indigo-600', mode === 'image'); dom.imageModeBtn.classList.toggle('text-white', mode === 'image');
             dom.promptInput.placeholder = mode === 'chat' ? "Ask RaVa anything..." : "Describe an image to create or style...";
         }
-        dom.chatModeBtn.addEventListener('click', () => switchMode('chat')); dom.imageModeBtn.addEventListener('click', () => switchMode('image'));
         
-        dom.sendBtn.addEventListener('click', handleSendMessage); dom.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
+        function init() {
+            createStars();
+            setupAuthListeners();
+            checkMaintenanceAndInit();
+            dom.chatModeBtn.addEventListener('click', () => switchMode('chat')); 
+            dom.imageModeBtn.addEventListener('click', () => switchMode('image'));
+            dom.sendBtn.addEventListener('click', () => handleSendMessage());
+            dom.describeImageBtn.addEventListener('click', () => handleSendMessage("Describe this image in detail."));
+            dom.promptInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
+        }
         
-        async function handleSendMessage() {
-             const prompt = dom.promptInput.value.trim(); if (!prompt && !imageBase64) return;
-            dom.sendBtn.disabled = true; addUserMessage(prompt, imageBase64); dom.promptInput.value = '';
+        async function handleSendMessage(predefinedPrompt = null) {
+            const prompt = predefinedPrompt || dom.promptInput.value.trim(); 
+            if (!prompt && !imageBase64) return;
+            dom.sendBtn.disabled = true; 
+            addUserMessage(prompt, imageBase64); 
+            dom.promptInput.value = '';
             addBotMessage("", true);
             try {
                 const response = await callProxyAPI(prompt, imageBase64, currentMode, userStatus);
                 const part = response?.candidates?.[0]?.content?.parts?.[0];
-                if (!part) throw new Error("Invalid response structure from API.");
-
+                if (!part) throw new Error("Invalid response from API.");
                 const responseText = part.text;
                 if (responseText) {
                     if (responseText.includes('Welcome back, Master!')) userStatus = 'master'; 
                     else if (responseText.includes("Welcome! It's so good to hear from you.")) userStatus = 'family';
                 }
-                
                 const b64 = part.inlineData?.data;
-                if (b64) {
-                    updateBotMessageWithImage(b64, prompt);
-                } else {
-                    updateBotMessage(responseText || "I'm not sure how to respond to that, try something else.");
-                }
-
-            } catch (error) { console.error("Full API Error:", error); updateBotMessage(`Sorry, an error occurred: **Details:** ${error.message}`); } 
+                if (b64) { updateBotMessageWithImage(b64, prompt); } 
+                else { updateBotMessage(responseText || "I'm not sure how to respond to that."); }
+            } catch (error) { console.error("API Error:", error); updateBotMessage(`**Error:** ${error.message}`); } 
             finally { dom.sendBtn.disabled = false; removeImage(); }
         }
 
-        async function callProxyAPI(prompt, base64Data, mode, status) { /* Function remains the same */ }
+        async function callProxyAPI(prompt, base64Data, mode, status, ttsPrompt) {
+            const response = await fetch('/.netlify/functions/gemini', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt, base64Data, mode, userStatus: status, ttsPrompt }) });
+            const result = await response.json();
+            if (!response.ok) throw new Error(JSON.stringify(result.error) || 'Unknown error');
+            return result;
+        }
 
         function addUserMessage(text, b64) { /* Function remains the same */ }
         function addBotMessage(text, isTyping = false) { /* Function remains the same */ }
@@ -327,11 +391,84 @@
         function updateBotMessageWithImage(base64Image, prompt) { /* Function remains the same */ }
         
         window.downloadImage = (dataUrl, filename) => { /* Function remains the same */ }
+        
+        window.speakText = async (button) => {
+            const messageDiv = button.closest('.ai-message').querySelector('.ai-message-content');
+            const textToSpeak = messageDiv.innerText;
+            if(!textToSpeak || button.classList.contains('loading')) return;
+
+            button.classList.add('loading');
+            try {
+                const response = await callProxyAPI(null, null, 'tts', userStatus, textToSpeak);
+                const audioData = response.candidates[0].content.parts[0].inlineData.data;
+                const pcm = base64ToArrayBuffer(audioData);
+                const wavBlob = pcmToWav(new Int16Array(pcm), 24000);
+                const audioUrl = URL.createObjectURL(wavBlob);
+                new Audio(audioUrl).play();
+            } catch (e) {
+                console.error("TTS Error:", e);
+            } finally {
+                button.classList.remove('loading');
+            }
+        }
+
+        function base64ToArrayBuffer(base64) {
+            const binary_string = window.atob(base64);
+            const len = binary_string.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
+        }
+
+        function pcmToWav(pcmData, sampleRate) {
+            const numChannels = 1;
+            const bitsPerSample = 16;
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+            const dataSize = pcmData.length * (bitsPerSample / 8);
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+            function writeString(view, offset, string) { for (let i = 0; i < string.length; i++) { view.setUint8(offset + i, string.charCodeAt(i)); } }
+            writeString(view, 0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(view, 8, 'WAVE');
+            writeString(view, 12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(view, 36, 'data');
+            view.setUint32(40, dataSize, true);
+            for (let i = 0; i < pcmData.length; i++) { view.setInt16(44 + i * 2, pcmData[i], true); }
+            return new Blob([view], { type: 'audio/wav' });
+        }
 
         dom.imageUploadBtn.addEventListener('click', () => dom.imageUpload.click());
         dom.removeImageBtn.addEventListener('click', removeImage);
-        dom.imageUpload.addEventListener('change', (e) => { /* Function remains the same */ });
-        function removeImage() { imageBase64 = null; dom.imageUpload.value = ''; dom.imagePreviewContainer.classList.add('hidden'); }
+        dom.imageUpload.addEventListener('change', (e) => { 
+            const file = e.target.files[0]; 
+            if (file) { 
+                const reader = new FileReader(); 
+                reader.onload = (event) => { 
+                    imageBase64 = event.target.result.replace('data:', '').replace(/^.+,/, ''); 
+                    dom.imagePreview.src = event.target.result; 
+                    dom.imagePreviewContainer.classList.remove('hidden'); 
+                    dom.imageActions.classList.remove('hidden');
+                }; 
+                reader.readAsDataURL(file); 
+            } 
+        });
+        function removeImage() { 
+            imageBase64 = null; 
+            dom.imageUpload.value = ''; 
+            dom.imagePreviewContainer.classList.add('hidden'); 
+            dom.imageActions.classList.add('hidden');
+        }
         
         dom.adminLoginBtn.addEventListener('click', () => {
             if (dom.adminPass.value === 'MasterVishal@Rava') {
@@ -342,12 +479,6 @@
         
         async function setupAdminDashboard() {
             // Setup logic for admin dashboard, including maintenance toggle
-        }
-        
-        function init() {
-            createStars();
-            setupAuthListeners();
-            checkMaintenanceAndInit();
         }
     </script>
 </body>
