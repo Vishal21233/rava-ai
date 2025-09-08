@@ -18,4 +18,3 @@
   pretty_urls = false
 [build.processing.images]
   compress = false
-
